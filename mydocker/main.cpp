@@ -156,25 +156,29 @@ main(int argc, char** argv)
     }
     
     FILE* fp;
-    fp = fopen(logfile, "w");
+    fp = fopen(logfile, "a+");
     snprintf(log, BUF_SIZE - 1, "[%s][%s][ret]\n%s\n", logtime(), process, cmd);
+    fseek(fp, 0, SEEK_END);
     fwrite(log, strlen(log), 1, fp);
     fclose(fp);
 
-    fp = fopen(COVER_LOG_FILE, "w");
+    fp = fopen(COVER_LOG_FILE, "a+");
     snprintf(log, BUF_SIZE - 1, "[%s][%s][ret]\n%s\n", logtime(), process, cmd);
+    fseek(fp, 0, SEEK_END);
     fwrite(log, strlen(log), 1, fp);
     fclose(fp);
 
     cmd_ret = my_system(cmd, result);
 
-    fp = fopen(logfile, "w");
+    fp = fopen(logfile, "a+");
     snprintf(log, BUF_SIZE - 1, "[%s][%s][ret]\n%s\n", logtime(), process, result);
+    fseek(fp, 0, SEEK_END);
     fwrite(log, strlen(log), 1, fp);
     fclose(fp);
     
-    fp = fopen(COVER_LOG_FILE, "w");
+    fp = fopen(COVER_LOG_FILE, "a+");
     snprintf(log, BUF_SIZE - 1, "[%s][%s][ret]\n%s\n", logtime(), process, result);
+    fseek(fp, 0, SEEK_END);
     fwrite(log, strlen(log), 1, fp);
     fclose(fp);
 
