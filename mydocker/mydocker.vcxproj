@@ -54,6 +54,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>WSL_1_0</PlatformToolset>
+    <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -80,6 +81,10 @@
     <RemoteCCompileToolExe>arm-linux-gnueabihf-g++</RemoteCCompileToolExe>
     <RemoteCppCompileToolExe>arm-linux-gnueabihf-g++</RemoteCppCompileToolExe>
     <RemoteLdToolExe>arm-linux-gnueabihf-g++</RemoteLdToolExe>
+    <TargetName>docker</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
