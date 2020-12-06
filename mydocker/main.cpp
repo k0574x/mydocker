@@ -10,7 +10,7 @@
 /* popen实现mysystem
 */
 
-#define BUF_SIZE 8192
+#define BUF_SIZE 10240
 
 void getNameByPid(pid_t pid, char* task_name) {
     char proc_pid_path[BUF_SIZE];
@@ -81,9 +81,12 @@ char* logtime()
 }
 
 #define COVER_LOG_PATH  "/tmp/cover"
+#define COVER_LOG_FILE  "/tmp/cover/cover_all.log"
 int
 main(int argc, char** argv)
 {
+    char tmp[BUF_SIZE] = { 0 };
+    char process[BUF_SIZE] = { 0 };
     char name[BUF_SIZE] = { 0 };
     char logfile[BUF_SIZE] = { 0 };
     char log[BUF_SIZE] = { 0 };
@@ -91,24 +94,39 @@ main(int argc, char** argv)
     char result[BUF_SIZE] = { 0 };
     int cmd_ret;
 
-    //snprintf(cmd, BUF_SIZE - 1, "ps -f $PPID | awk '{if (NR==2) print $3}'");
-    //my_system(cmd, result);
-    //printf("ppid=%d,result=%s", getppid(), result);
+    int pid = getpid();
+    getNameByPid(pid, name);
+    snprintf(tmp, BUF_SIZE - 1, "%d:%s<", pid, name);
+    strncat(process, tmp, BUF_SIZE - 1);
 
-    mkdir(COVER_LOG_PATH, 777);
-#if 0
-    getNameByPid(getppid(), name);
-#else
+    int ppid = getppid();
+    getNameByPid(ppid, name);
+    snprintf(tmp, BUF_SIZE - 1, "%d:%s<", ppid, name);
+    strncat(process, tmp, BUF_SIZE - 1);
+
     snprintf(cmd, BUF_SIZE - 1, "head -n 7 /proc/%d/status | awk '{if (NR==5) print $2}'", getppid());
     my_system(cmd, result);
-    //printf("pppid=%s", result);
-    getNameByPid(atoi(result), name);
-    //printf("pppidname=%s", name);
-#endif
-    snprintf(logfile, BUF_SIZE - 1, "%s/cover_%s.log", COVER_LOG_PATH, name);
+    int pppid = atoi(result);
+    getNameByPid(pppid, name);
+    snprintf(tmp, BUF_SIZE - 1, "%d:%s<", pppid, name);
+    strncat(process, tmp, BUF_SIZE - 1);
 
+    mkdir(COVER_LOG_PATH, 777);
+    snprintf(logfile, BUF_SIZE - 1, "%s/cover_%s.log", COVER_LOG_PATH, name);
     snprintf(cmd, BUF_SIZE - 1, "touch %s", logfile);
     system(cmd);
+    snprintf(cmd, BUF_SIZE - 1, "touch %s", COVER_LOG_FILE);
+    system(cmd);
+
+    while (pppid > 1)
+    {
+        snprintf(cmd, BUF_SIZE - 1, "head -n 7 /proc/%d/status | awk '{if (NR==5) print $2}'", pppid);
+        my_system(cmd, result);
+        pppid = atoi(result);
+        getNameByPid(pppid, name);
+        snprintf(tmp, BUF_SIZE - 1, "%d:%s<", pppid, name);
+        strncat(process, tmp, BUF_SIZE - 1);
+    }
 
     //snprintf(cmd, BUF_SIZE - 1, "cat /proc/%d/cmdline", getpid());
     //my_system(cmd, result);
@@ -137,27 +155,50 @@ main(int argc, char** argv)
         snprintf(cmd, BUF_SIZE -1, "docker -v");
     }
     
-    snprintf(log, BUF_SIZE - 1, "echo \"[%-1s][%s][cmd]%s\" >> %s", logtime(), name, cmd, logfile);
-    system(log);
+    FILE* fp;
+    fp = fopen(logfile, "w");
+    snprintf(log, BUF_SIZE - 1, "[%s][%s][ret]\n%s\n", logtime(), process, cmd);
+    fwrite(log, strlen(log), 1, fp);
+    fclose(fp);
+
+    fp = fopen(COVER_LOG_FILE, "w");
+    snprintf(log, BUF_SIZE - 1, "[%s][%s][ret]\n%s\n", logtime(), process, cmd);
+    fwrite(log, strlen(log), 1, fp);
+    fclose(fp);
 
     cmd_ret = my_system(cmd, result);
 
-    snprintf(log, BUF_SIZE - 1, "echo \"[%s][%s][ret]%s\" >> %s", logtime(), name, result, logfile);
-    system(log);
+    fp = fopen(logfile, "w");
+    snprintf(log, BUF_SIZE - 1, "[%s][%s][ret]\n%s\n", logtime(), process, result);
+    fwrite(log, strlen(log), 1, fp);
+    fclose(fp);
+    
+    fp = fopen(COVER_LOG_FILE, "w");
+    snprintf(log, BUF_SIZE - 1, "[%s][%s][ret]\n%s\n", logtime(), process, result);
+    fwrite(log, strlen(log), 1, fp);
+    fclose(fp);
 
-    if (result[strlen(result) - 1] == '\n')
+#if 1
+    printf("%s", result);
+#else
+    //if (result[strlen(result) - 1] == '\n')
+    //{
+    //    result[strlen(result) - 1] = '\0';
+    //}
+    //snprintf(cmd, BUF_SIZE-1, "echo \"%s\"", result);
+    //system(cmd);
+#endif
+
+#if 0
+    if (0 != cmd_ret)
     {
-        result[strlen(result) - 1] = '\0';
+        printf("failed reason :[%s]\n", cmd);
     }
-    snprintf(cmd, BUF_SIZE-1, "echo \"%s\"", result);
-    if (0 != cmd_ret) {
-        system(cmd);
-        //printf("failed reason :[%s]\n", cmd);
+    else
+    {
+        printf("success :[%s]\n", cmd);
     }
-    else {
-        //printf("success :[%s]\n", cmd);
-        system(cmd);
-    }
+#endif
 
     return cmd_ret;
 }
