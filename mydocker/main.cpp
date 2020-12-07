@@ -171,7 +171,6 @@ main(int argc, char** argv)
     if (islog)
     {
         fp = fopen(COVER_LOG_FILE, "a");
-        snprintf(log, BUF_SIZE - 1, "[%s][%s][cmd]\n%s\n", logtime(), process, cmd);
         //fseek(fp, 0, SEEK_END);
         fwrite(log, strlen(log), 1, fp);
         fclose(fp);
@@ -180,7 +179,7 @@ main(int argc, char** argv)
     cmd_ret = my_system(cmd, result);
 
     fp = fopen(logfile, "a");
-    snprintf(log, BUF_SIZE - 1, "[%s][%s][ret]\n%s\n", logtime(), process, result);
+    snprintf(log, BUF_SIZE - 1, "[%s][%s][ret][%d]\n%s\n", logtime(), process, cmd_ret, result);
     //fseek(fp, 0, SEEK_END);
     fwrite(log, strlen(log), 1, fp);
     fclose(fp);
@@ -188,7 +187,6 @@ main(int argc, char** argv)
     if (islog)
     {
         fp = fopen(COVER_LOG_FILE, "a");
-        snprintf(log, BUF_SIZE - 1, "[%s][%s][ret]\n%s\n", logtime(), process, result);
         //fseek(fp, 0, SEEK_END);
         fwrite(log, strlen(log), 1, fp);
         fclose(fp);
