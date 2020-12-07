@@ -85,6 +85,7 @@ char* logtime()
 int
 main(int argc, char** argv)
 {
+    int islog = 1;
     char tmp[BUF_SIZE] = { 0 };
     char process[BUF_SIZE] = { 0 };
     char name[BUF_SIZE] = { 0 };
@@ -117,6 +118,11 @@ main(int argc, char** argv)
     system(cmd);
     snprintf(cmd, BUF_SIZE - 1, "touch %s", COVER_LOG_FILE);
     system(cmd);
+
+    if (strstr(process, "edgecli"))
+    {
+        islog = 0;
+    }
 
     while (pppid > 1)
     {
@@ -156,31 +162,37 @@ main(int argc, char** argv)
     }
     
     FILE* fp;
-    fp = fopen(logfile, "a+");
-    snprintf(log, BUF_SIZE - 1, "[%s][%s][ret]\n%s\n", logtime(), process, cmd);
-    fseek(fp, 0, SEEK_END);
+    fp = fopen(logfile, "a");
+    snprintf(log, BUF_SIZE - 1, "[%s][%s][cmd]\n%s\n", logtime(), process, cmd);
+    //fseek(fp, 0, SEEK_END);
     fwrite(log, strlen(log), 1, fp);
     fclose(fp);
 
-    fp = fopen(COVER_LOG_FILE, "a+");
-    snprintf(log, BUF_SIZE - 1, "[%s][%s][ret]\n%s\n", logtime(), process, cmd);
-    fseek(fp, 0, SEEK_END);
-    fwrite(log, strlen(log), 1, fp);
-    fclose(fp);
+    if (islog)
+    {
+        fp = fopen(COVER_LOG_FILE, "a");
+        snprintf(log, BUF_SIZE - 1, "[%s][%s][cmd]\n%s\n", logtime(), process, cmd);
+        //fseek(fp, 0, SEEK_END);
+        fwrite(log, strlen(log), 1, fp);
+        fclose(fp);
+    }
 
     cmd_ret = my_system(cmd, result);
 
-    fp = fopen(logfile, "a+");
+    fp = fopen(logfile, "a");
     snprintf(log, BUF_SIZE - 1, "[%s][%s][ret]\n%s\n", logtime(), process, result);
-    fseek(fp, 0, SEEK_END);
+    //fseek(fp, 0, SEEK_END);
     fwrite(log, strlen(log), 1, fp);
     fclose(fp);
-    
-    fp = fopen(COVER_LOG_FILE, "a+");
-    snprintf(log, BUF_SIZE - 1, "[%s][%s][ret]\n%s\n", logtime(), process, result);
-    fseek(fp, 0, SEEK_END);
-    fwrite(log, strlen(log), 1, fp);
-    fclose(fp);
+
+    if (islog)
+    {
+        fp = fopen(COVER_LOG_FILE, "a");
+        snprintf(log, BUF_SIZE - 1, "[%s][%s][ret]\n%s\n", logtime(), process, result);
+        //fseek(fp, 0, SEEK_END);
+        fwrite(log, strlen(log), 1, fp);
+        fclose(fp);
+    }
 
 #if 1
     printf("%s", result);
